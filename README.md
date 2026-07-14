@@ -1,66 +1,164 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# BookShelf 書籍レビューアプリ
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## 概要
 
-## About Laravel
+BookShelfは、書籍の登録・閲覧・レビュー投稿を行える書籍レビューアプリケーションです。
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+ユーザーは書籍の登録・検索・レビュー投稿・お気に入り登録を行うことができ、
+ジャンル分類やランキング機能も備えています。
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+また、外部アプリケーション向けの公開APIを提供しています。
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 作成者
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+新海　圭一郎
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 使用技術
 
-## Laravel Sponsors
+| 項目         | 使用技術        |
+| ------------ | --------------- |
+| PHP          | 8.2             |
+| Laravel      | 10.50.2         |
+| MySQL        | 8.0             |
+| Nginx        | latest          |
+| Laravel Sail | latest          |
+| Docker       | latest          |
+| Blade        | -               |
+| Tailwind CSS | 3.4             |
+| Alpine.js    | latest          |
+| Vite         | latest          |
+| Fortify      | Laravel Fortify |
+| phpMyAdmin   | latest          |
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## ER図
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+> 実装完了後に掲載予定
 
-## Contributing
+<!--
+![ER図](docs/er-diagram.png)
+-->
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## 開発環境URL
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| サービス         | URL                   |
+| ---------------- | --------------------- |
+| アプリケーション | http://localhost      |
+| phpMyAdmin       | http://localhost:8080 |
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 動作環境
 
-## License
+- Docker Desktop
+- Git
+- Docker Compose
+- Laravel Sail
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## 環境構築
+
+### 1. リポジトリをクローン
+
+```bash
+git clone　https://github.com/kei-aichi/bookshelf-app.git
+```
+
+```bash
+cd bookshelf-app
+```
+
+### 2. .env作成
+
+```bash
+cp .env.example .env
+```
+
+### 3. Composerインストール
+
+```bash
+composer install
+```
+
+### 4. アプリケーションキー生成
+
+```bash
+sail artisan key:generate
+```
+
+### 5. Sail起動
+
+```bash
+sail up -d
+```
+
+### 6. npmパッケージインストール
+
+```bash
+sail npm install
+```
+
+### 7. Vite起動
+
+```bash
+sail npm run dev
+```
+
+### 8. マイグレーション
+
+```bash
+sail artisan migrate --seed
+```
+
+---
+
+## テスト実行
+
+### Feature / Unitテスト
+
+```bash
+sail artisan test
+```
+
+---
+
+## 機能一覧
+
+### 基本機能
+
+- 会員登録・ログイン
+- 書籍CRUD
+- レビューCRUD
+- ジャンル管理
+- お気に入り機能
+- ランキング機能
+- 読書計画管理
+- 通知機能
+
+### 応用機能
+
+- Google Books API連携
+- 高度な検索
+- Laravel SanctumによるAPI認証
+- 読書レポート
+- リマインダー通知
+
+---
+
+## APIエンドポイント
+
+| Method | URI             | 内容         |
+| ------ | --------------- | ------------ |
+| GET    | /api/books      | 書籍一覧取得 |
+| GET    | /api/books/{id} | 書籍詳細取得 |
+| POST   | /api/books      | 書籍登録     |
+| PUT    | /api/books/{id} | 書籍更新     |
+| DELETE | /api/books/{id} | 書籍削除     |
