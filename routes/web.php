@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\GenreController;
 use Illuminate\Support\Facades\Route;
 
 // 公開ページ
@@ -28,9 +29,7 @@ Route::middleware('auth')->group(function () {
         return 'お気に入り一覧は今後実装予定です';
     })->name('favorites.index');
 
-    Route::get('/genres', function () {
-        return view('genres.index');
-    })->name('genres.index');
+    Route::resource('genres', GenreController::class);
 });
 
 Route::resource('books', BookController::class)
