@@ -18,4 +18,18 @@ class BookController extends Controller
 
         return view('books.index', compact('books'));
     }
+
+    /**
+     * 書籍詳細を表示する。
+     */
+    public function show(Book $book)
+    {
+        $book->load([
+            'genres',
+            'reviews.user',
+            'reviews.likedByUsers',
+        ]);
+
+        return view('books.show', compact('book'));
+    }
 }

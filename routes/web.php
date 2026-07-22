@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\BookController;
-use App\Models\Book;
 use Illuminate\Support\Facades\Route;
 
 // 公開ページ
@@ -34,6 +33,5 @@ Route::middleware('auth')->group(function () {
     })->name('genres.index');
 });
 
-Route::get('/books/{book}', function (Book $book) {
-    return '書籍詳細画面：'.$book->title;
-})->name('books.show');
+Route::get('/books/{book}', [BookController::class, 'show'])
+    ->name('books.show');
