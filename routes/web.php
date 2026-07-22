@@ -7,22 +7,22 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [BookController::class, 'index'])
     ->name('home');
 
-Route::get('/books', [BookController::class, 'index'])
-    ->name('books.index');
-
 Route::get('/ranking', function () {
     return view('ranking.index');
 })->name('ranking.index');
 
 // ログイン必須ページ
 Route::middleware('auth')->group(function () {
-    Route::get('/books/create', function () {
-        return view('books.create');
-    })->name('books.create');
+    Route::resource('books', BookController::class)
+        ->only(['create', 'store', 'edit', 'update', 'destroy']);
 
-    Route::get('/books/{book}/edit', function () {
-        return view('books.edit');
-    })->name('books.edit');
+    Route::post('/books/{book}/favorites', function () {
+        return back()->with('success', 'お気に入り機能は今後実装予定です。');
+    })->name('favorites.toggle');
+
+    Route::post('/books/{book}/reviews', function () {
+        return back()->with('success', 'レビュー機能は今後実装予定です。');
+    })->name('reviews.store');
 
     Route::get('/favorites', function () {
         return 'お気に入り一覧は今後実装予定です';
@@ -33,5 +33,5 @@ Route::middleware('auth')->group(function () {
     })->name('genres.index');
 });
 
-Route::get('/books/{book}', [BookController::class, 'show'])
-    ->name('books.show');
+Route::resource('books', BookController::class)
+    ->only(['index', 'show']);
