@@ -60,6 +60,16 @@ class User extends Authenticatable
         return $this->hasMany(ReviewLike::class);
     }
 
+    public function likedReviews(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Review::class,
+            'review_likes',
+            'user_id',
+            'review_id'
+        )->withTimestamps();
+    }
+
     public function favorites(): HasMany
     {
         return $this->hasMany(Favorite::class);
