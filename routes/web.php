@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GenreController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ReviewLikeController;
@@ -19,10 +20,6 @@ Route::middleware('auth')->group(function () {
     Route::resource('books', BookController::class)
         ->only(['create', 'store', 'edit', 'update', 'destroy']);
 
-    Route::post('/books/{book}/favorites', function () {
-        return back()->with('success', 'お気に入り機能は今後実装予定です。');
-    })->name('favorites.toggle');
-
     // レビュー投稿
     Route::post('/books/{book}/reviews', [ReviewController::class, 'store'])
         ->name('reviews.store');
@@ -35,9 +32,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/reviews/{review}/like', [ReviewLikeController::class, 'toggle'])
         ->name('reviews.like');
 
-    Route::get('/favorites', function () {
-        return 'お気に入り一覧は今後実装予定です';
-    })->name('favorites.index');
+    // お気に入り一覧画面
+    Route::get('/favorites', [FavoriteController::class, 'index'])
+        ->name('favorites.index');
+
+    // お気に入り追加・解除
+    Route::post('/books/{book}/favorite', [FavoriteController::class, 'toggle'])
+        ->name('favorites.toggle');
 
     Route::resource('genres', GenreController::class);
 });
