@@ -83,13 +83,13 @@ class BookController extends Controller
     {
         $this->authorize('update', $book);
 
+        $book->load('genres');
+
         $genres = Genre::orderBy('name')->get();
-        $bookGenreIds = $book->genres()->pluck('genres.id')->toArray();
 
         return view('books.edit', compact(
             'book',
-            'genres',
-            'bookGenreIds'
+            'genres'
         ));
     }
 
