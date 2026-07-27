@@ -54,6 +54,24 @@ BookShelfは、書籍の登録・閲覧・レビュー投稿を行える書籍�
 
 ---
 
+## テーブル設計
+
+| テーブル名    | 説明                         |
+| ------------- | ---------------------------- |
+| users         | ユーザー情報                 |
+| books         | 書籍情報                     |
+| genres        | ジャンル情報                 |
+| book_genre    | 書籍とジャンルの中間テーブル |
+| reviews       | レビュー情報                 |
+| review_likes  | レビューへのいいね           |
+| favorites     | お気に入り情報               |
+| reading_plans | 読書計画（応用機能）         |
+| notifications | 通知（応用機能）             |
+
+※ 詳細なリレーションはER図を参照してください。
+
+---
+
 ## ER図
 
 ```mermaid
@@ -222,6 +240,22 @@ sail npm run dev
 ```bash
 sail artisan migrate --seed
 ```
+
+---
+
+## サンプルログイン情報
+
+DatabaseSeeder実行時に、以下のテストユーザーを作成します。
+
+| ユーザー名 | メールアドレス        | パスワード |
+| ---------- | --------------------- | ---------- |
+| 山田 太郎  | yamada@example.com    | password   |
+| 鈴木 花子  | suzuki@example.com    | password   |
+| 田中 一郎  | tanaka@example.com    | password   |
+| 佐藤 次郎  | sato@example.com      | password   |
+| 高橋 健太  | takahashi@example.com | password   |
+
+※ パスワードは全ユーザー共通で `password` です。
 
 ---
 
