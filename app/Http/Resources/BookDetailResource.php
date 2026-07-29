@@ -19,7 +19,7 @@ class BookDetailResource extends JsonResource
             'title' => $this->title,
             'author' => $this->author,
             'isbn' => $this->isbn,
-            'published_at' => $this->published_at,
+            'published_date' => $this->published_date,
             'image_url' => $this->image_url,
             'description' => $this->description,
             'genres' => $this->genres->map(function ($genre) {
