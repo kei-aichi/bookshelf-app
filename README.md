@@ -294,6 +294,8 @@ sail artisan test
 
 ## APIエンドポイント
 
+###　公開API
+
 | Method | URI                | 内容         |
 | ------ | ------------------ | ------------ |
 | GET    | /api/v1/books      | 書籍一覧取得 |
@@ -301,3 +303,9 @@ sail artisan test
 | POST   | /api/v1/books      | 書籍登録     |
 | PUT    | /api/v1/books/{id} | 書籍更新     |
 | DELETE | /api/v1/books/{id} | 書籍削除     |
+
+### 外部API連携
+
+| Method | URI                | 内容                                             |
+| ------ | ------------------ | ------------------------------------------------ |
+| GET    | /books/isbn/{isbn} | Google Books APIを利用してISBNから書籍情報を取得 |
