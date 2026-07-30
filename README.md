@@ -294,10 +294,10 @@ sail artisan test
 
 ## APIエンドポイント
 
-| Method | URI             | 内容         |
-| ------ | --------------- | ------------ |
-| GET    | /api/books      | 書籍一覧取得 |
-| GET    | /api/books/{id} | 書籍詳細取得 |
-| POST   | /api/books      | 書籍登録     |
-| PUT    | /api/books/{id} | 書籍更新     |
-| DELETE | /api/books/{id} | 書籍削除     |
+| Method | URI                | 内容         |
+| ------ | ------------------ | ------------ |
+| GET    | /api/v1/books      | 書籍一覧取得 |
+| GET    | /api/v1/books/{id} | 書籍詳細取得 |
+| POST   | /api/v1/books      | 書籍登録     |
+| PUT    | /api/v1/books/{id} | 書籍更新     |
+| DELETE | /api/v1/books/{id} | 書籍削除     |

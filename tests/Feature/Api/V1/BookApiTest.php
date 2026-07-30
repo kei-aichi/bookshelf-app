@@ -3,8 +3,10 @@
 namespace Tests\Feature\Api\V1;
 
 use App\Models\Book;
+use App\Models\Favorite;
 use App\Models\Genre;
 use App\Models\Review;
+use App\Models\ReviewLike;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -781,30 +783,35 @@ class BookApiTest extends TestCase
     }
 
     /**
-     * 書籍を削除できる
+     * 書籍を削除すると関連データも削除される
      */
-    public function test_book_can_be_deleted(): void
+    public function test_book_can_be_deleted_with_related_data(): void
     {
-        $book = Book::factory()
-            ->for($this->user)
-            ->create([
-                'title' => '削除対象の書籍',
-                'author' => 'テスト著者',
-                'isbn' => '9784873119991',
-            ]);
+        $user = User::factory()->create();
 
-        $genre = Genre::factory()->create([
-            'name' => '技術書',
-        ]);
+        $book = Book::factory()->create();
+        $genre = Genre::factory()->create();
 
         $book->genres()->attach($genre->id);
 
-        $response = $this->deleteJson(
-            "/api/v1/books/{$book->id}"
-        );
+        $review = Review::factory()->create([
+            'user_id' => $user->id,
+            'book_id' => $book->id,
+        ]);
 
-        $response
-            ->assertNoContent();
+        $reviewLike = ReviewLike::factory()->create([
+            'user_id' => $user->id,
+            'review_id' => $review->id,
+        ]);
+
+        $favorite = Favorite::factory()->create([
+            'user_id' => $user->id,
+            'book_id' => $book->id,
+        ]);
+
+        $response = $this->deleteJson("/api/v1/books/{$book->id}");
+
+        $response->assertNoContent();
 
         $this->assertDatabaseMissing('books', [
             'id' => $book->id,
@@ -813,6 +820,18 @@ class BookApiTest extends TestCase
         $this->assertDatabaseMissing('book_genre', [
             'book_id' => $book->id,
             'genre_id' => $genre->id,
+        ]);
+
+        $this->assertDatabaseMissing('reviews', [
+            'id' => $review->id,
+        ]);
+
+        $this->assertDatabaseMissing('review_likes', [
+            'id' => $reviewLike->id,
+        ]);
+
+        $this->assertDatabaseMissing('favorites', [
+            'id' => $favorite->id,
         ]);
     }
 
