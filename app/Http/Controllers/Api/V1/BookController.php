@@ -47,14 +47,20 @@ class BookController extends Controller
     /**
      * 書籍詳細を取得する
      */
-    public function show(Book $book): BookDetailResource
+    public function show(int $id): BookDetailResource|JsonResponse
     {
-        $book->load([
+        $bookModel = Book::with([
             'genres',
             'reviews.user',
-        ]);
+        ])->find($id);
 
-        return new BookDetailResource($book);
+        if (! $bookModel) {
+            return response()->json([
+                'message' => '指定された書籍は存在しません。',
+            ], 404);
+        }
+
+        return new BookDetailResource($bookModel);
     }
 
     /**
@@ -100,11 +106,19 @@ class BookController extends Controller
     /**
      * 書籍を更新する
      */
-    public function update(UpdateBookRequest $request, Book $book): JsonResponse
+    public function update(UpdateBookRequest $request, int $book): JsonResponse
     {
+        $bookModel = Book::find($book);
+
+        if (! $bookModel) {
+            return response()->json([
+                'message' => '指定された書籍は存在しません。',
+            ], 404);
+        }
+
         $validated = $request->validated();
 
-        $book->update([
+        $bookModel->update([
             'title' => $validated['title'],
             'author' => $validated['author'],
             'isbn' => $validated['isbn'],
@@ -113,22 +127,30 @@ class BookController extends Controller
             'image_url' => $validated['image_url'] ?? null,
         ]);
 
-        $book->genres()->sync($validated['genre_ids']);
+        $bookModel->genres()->sync($validated['genre_ids']);
 
-        $book->load('genres');
+        $bookModel->load('genres');
 
         return response()->json([
             'message' => '書籍を更新しました。',
-            'data' => new BookCrudResource($book),
+            'data' => new BookCrudResource($bookModel),
         ], 200);
     }
 
     /**
      * 書籍を削除する
      */
-    public function destroy(Book $book): JsonResponse
+    public function destroy(int $book): JsonResponse
     {
-        $book->delete();
+        $bookModel = Book::find($book);
+
+        if (! $bookModel) {
+            return response()->json([
+                'message' => '指定された書籍は存在しません。',
+            ], 404);
+        }
+
+        $bookModel->delete();
 
         return response()->json(null, 204);
     }

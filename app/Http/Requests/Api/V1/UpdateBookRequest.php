@@ -3,7 +3,9 @@
 namespace App\Http\Requests\Api\V1;
 
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
 class UpdateBookRequest extends FormRequest
@@ -23,16 +25,13 @@ class UpdateBookRequest extends FormRequest
      */
     public function rules(): array
     {
-
-        $book = $this->route('book');
-
         return [
             'title' => ['required', 'string', 'max:255'],
             'author' => ['required', 'string', 'max:255'],
             'isbn' => [
                 'required',
                 'digits:13',
-                Rule::unique('books', 'isbn')->ignore($book),
+                Rule::unique('books', 'isbn')->ignore($this->route('book')),
             ],
             'published_date' => ['required', 'date'],
             'description' => ['nullable', 'string', 'max:500'],
@@ -73,5 +72,15 @@ class UpdateBookRequest extends FormRequest
             'genre_ids.*.integer' => 'ジャンルIDは整数で指定してください。',
             'genre_ids.*.exists' => '指定されたジャンルは存在しません。',
         ];
+    }
+
+    protected function failedValidation(Validator $validator): void
+    {
+        throw new HttpResponseException(
+            response()->json([
+                'message' => '指定されたパラメーターが不正です。',
+                'errors' => $validator->errors(),
+            ], 422)
+        );
     }
 }

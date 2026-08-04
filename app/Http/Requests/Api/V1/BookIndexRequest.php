@@ -3,7 +3,9 @@
 namespace App\Http\Requests\Api\V1;
 
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class BookIndexRequest extends FormRequest
 {
@@ -46,5 +48,15 @@ class BookIndexRequest extends FormRequest
             'per_page.min' => '1ページあたりの件数は1件以上で指定してください。',
             'per_page.max' => '1ページあたりの件数は100件以下で指定してください。',
         ];
+    }
+
+    protected function failedValidation(Validator $validator): void
+    {
+        throw new HttpResponseException(
+            response()->json([
+                'message' => '指定されたパラメーターが不正です。',
+                'errors' => $validator->errors(),
+            ], 422)
+        );
     }
 }

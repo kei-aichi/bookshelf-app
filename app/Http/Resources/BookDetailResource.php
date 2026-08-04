@@ -34,7 +34,7 @@ class BookDetailResource extends JsonResource
                     'user_name' => $review->user->name,
                     'rating' => $review->rating,
                     'comment' => $review->comment,
-                    'created_at' => $review->created_at,
+                    'created_at' => $this->created_at->format('Y-m-d H:i:s'),
                 ];
             }),
         ];

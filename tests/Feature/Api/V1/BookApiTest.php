@@ -468,8 +468,8 @@ class BookApiTest extends TestCase
 
         $response
             ->assertNotFound()
-            ->assertJsonStructure([
-                'message',
+            ->assertExactJson([
+                'message' => '指定された書籍は存在しません。',
             ]);
     }
 
@@ -601,6 +601,8 @@ class BookApiTest extends TestCase
      */
     public function test_book_can_be_updated(): void
     {
+        $this->withoutExceptionHandling();
+
         $book = Book::factory()
             ->for($this->user)
             ->create([
@@ -779,7 +781,11 @@ class BookApiTest extends TestCase
             $requestData
         );
 
-        $response->assertNotFound();
+        $response
+            ->assertNotFound()
+            ->assertExactJson([
+                'message' => '指定された書籍は存在しません。',
+            ]);
     }
 
     /**
@@ -845,6 +851,9 @@ class BookApiTest extends TestCase
         );
 
         $response
-            ->assertNotFound();
+            ->assertNotFound()
+            ->assertExactJson([
+                'message' => '指定された書籍は存在しません。',
+            ]);
     }
 }
