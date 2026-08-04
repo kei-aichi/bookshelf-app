@@ -46,3 +46,14 @@ Route::middleware('auth')->group(function () {
 //　書籍詳細画面(公開ページ)
 Route::resource('books', BookController::class)
     ->only(['index', 'show']);
+
+Route::middleware('auth')->group(function () {
+    Route::view('/reports', 'reports.index')
+        ->name('reports.index');
+
+    Route::view('/reading-plans', 'reading-plans.index')
+        ->name('reading-plans.index');
+
+    Route::view('/notifications', 'notifications.index')
+        ->name('notifications.index');
+});
