@@ -72,6 +72,6 @@ class BookIndexTest extends TestCase
         $response
             ->assertOk()
             ->assertViewIs('books.index')
-            ->assertSee('書籍が登録されていません');
+            ->assertSee('書籍が見つかりませんでした。');
     }
 }
