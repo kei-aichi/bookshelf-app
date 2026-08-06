@@ -20,6 +20,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('books', BookController::class)
         ->only(['create', 'store', 'edit', 'update', 'destroy']);
 
+    // ISBN検索（Google Books API）
+    Route::get('/books/isbn/{isbn}', [BookController::class, 'searchIsbn'])
+        ->name('books.search-isbn');
+
     // レビュー投稿
     Route::post('/books/{book}/reviews', [ReviewController::class, 'store'])
         ->name('reviews.store');
