@@ -84,4 +84,9 @@ class User extends Authenticatable
             'book_id'
         )->withTimestamps();
     }
+
+    public function readingPlans(): HasMany
+    {
+        return $this->hasMany(ReadingPlan::class);
+    }
 }
