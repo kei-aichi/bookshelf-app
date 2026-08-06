@@ -2,7 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Book;
 use App\Models\Review;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,21 +19,21 @@ class ReviewFactory extends Factory
      */
     public function definition(): array
     {
-        return [
-            'rating' => fake()->numberBetween(3, 5),
+        $comments = [
+            1 => '期待していた内容とは異なりました。',
+            2 => '参考になる部分もありました。',
+            3 => '全体的に満足できる内容でした。',
+            4 => 'とても参考になりました。',
+            5 => '非常に満足できる内容でした。',
+        ];
 
-            'comment' => fake()->randomElement([
-                'とても読みやすく勉強になりました。',
-                '内容が分かりやすく、最後まで楽しめました。',
-                '何度も読み返したくなる一冊です。',
-                '初心者にもおすすめできる内容でした。',
-                '期待以上の内容で満足しています。',
-                '考え方が変わるきっかけになりました。',
-                '非常に参考になる一冊でした。',
-                '文章が読みやすく理解しやすかったです。',
-                'ぜひ多くの人に読んでほしい本です。',
-                '購入して良かったと思える内容でした。',
-            ]),
+        $rating = fake()->numberBetween(1, 5);
+
+        return [
+            'user_id' => User::factory(),
+            'book_id' => Book::factory(),
+            'rating' => $rating,
+            'comment' => $comments[$rating],
         ];
     }
 }
