@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\BookIndexRequest;
 use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
 use App\Models\Book;
 use App\Models\Genre;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\View\View;
 
 class BookController extends Controller
@@ -15,13 +18,53 @@ class BookController extends Controller
     /**
      * 書籍一覧を表示する。
      */
-    public function index(): View
+    public function index(BookIndexRequest $request): View
     {
-        $books = Book::with('genres')
-            ->withAvg('reviews', 'rating')
-            ->paginate(10);
+        $validated = $request->validated();
 
-        return view('books.index', compact('books'));
+        $keyword = $validated['keyword'] ?? null;
+        $genreId = $validated['genre'] ?? null;
+        $sort = $validated['sort'] ?? 'latest';
+
+        $books = Book::query()
+            ->with('genres')
+            ->withAvg('reviews', 'rating')
+            ->when($keyword, function ($query, string $keyword) {
+                $query->where(function ($query) use ($keyword) {
+                    $query
+                        ->where('title', 'like', "%{$keyword}%")
+                        ->orWhere('author', 'like', "%{$keyword}%");
+                });
+            })
+            ->when($genreId, function ($query, int $genreId) {
+                $query->whereHas('genres', function ($query) use ($genreId) {
+                    $query->where('genres.id', $genreId);
+                });
+            })
+            ->when($sort === 'latest', function ($query) {
+                $query->latest();
+            })
+            ->when($sort === 'oldest', function ($query) {
+                $query->oldest();
+            })
+            ->when($sort === 'title', function ($query) {
+                $query->orderBy('title');
+            })
+            ->when($sort === 'rating', function ($query) {
+                $query
+                    ->orderByRaw('reviews_avg_rating IS NULL')
+                    ->orderByDesc('reviews_avg_rating')
+                    ->orderByDesc('id');
+            })
+            ->paginate(10)
+            ->withQueryString();
+
+        $genres = Genre::orderBy('name')->get();
+
+        return view('books.index', compact(
+            'books',
+            'genres'
+        ));
     }
 
     /**
@@ -132,5 +175,57 @@ class BookController extends Controller
         return redirect()
             ->route('books.index')
             ->with('success', '書籍が削除されました。');
+    }
+
+    /**
+     * ISBNからGoogle Books APIで書籍情報を取得する。
+     */
+    public function searchIsbn(string $isbn): JsonResponse
+    {
+        if (! preg_match('/^\d{13}$/', $isbn)) {
+            return response()->json([
+                'error' => 'ISBNは13桁の半角数字で入力してください。',
+            ], 422);
+        }
+
+        try {
+            $response = Http::timeout(10)->get(
+                'https://www.googleapis.com/books/v1/volumes',
+                [
+                    'q' => "isbn:{$isbn}",
+                ]
+            );
+
+            if ($response->failed()) {
+                return response()->json([
+                    'error' => '書籍情報の取得に失敗しました。',
+                    'status' => $response->status(),
+                    'details' => $response->json(),
+                ], 502);
+            }
+
+            $items = $response->json('items');
+
+            if (empty($items)) {
+                return response()->json([
+                    'error' => '該当する書籍が見つかりませんでした。',
+                ], 404);
+            }
+
+            $volumeInfo = $items[0]['volumeInfo'] ?? [];
+
+            return response()->json([
+                'title' => $volumeInfo['title'] ?? null,
+                'author' => collect($volumeInfo['authors'] ?? [])->join('、'),
+                'isbn' => $isbn,
+                'published_date' => $volumeInfo['publishedDate'] ?? null,
+                'description' => $volumeInfo['description'] ?? null,
+                'image_url' => $volumeInfo['imageLinks']['thumbnail'] ?? null,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => '通信エラーが発生しました。',
+            ], 500);
+        }
     }
 }
