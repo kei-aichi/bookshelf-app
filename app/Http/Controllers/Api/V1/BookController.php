@@ -10,7 +10,6 @@ use App\Http\Resources\BookCrudResource;
 use App\Http\Resources\BookDetailResource;
 use App\Http\Resources\BookResource;
 use App\Models\Book;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -70,19 +69,7 @@ class BookController extends Controller
     {
         $validated = $request->validated();
 
-        $userId = 1;
-        $user = User::find($userId);
-
-        if (! $user) {
-            return response()->json([
-                'message' => '指定された登録者は存在しません。',
-                'errors' => [
-                    'user_id' => [
-                        '指定された登録者は存在しません。',
-                    ],
-                ],
-            ], 422);
-        }
+        $user = $request->user();
 
         $book = $user->books()->create([
             'title' => $validated['title'],
@@ -115,6 +102,8 @@ class BookController extends Controller
                 'message' => '指定された書籍は存在しません。',
             ], 404);
         }
+
+        $this->authorize('update', $bookModel);
 
         $validated = $request->validated();
 
@@ -149,6 +138,8 @@ class BookController extends Controller
                 'message' => '指定された書籍は存在しません。',
             ], 404);
         }
+
+        $this->authorize('delete', $bookModel);
 
         $bookModel->delete();
 
