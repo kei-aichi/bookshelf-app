@@ -9,6 +9,7 @@ use App\Models\Review;
 use App\Models\ReviewLike;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class BookApiTest extends TestCase
@@ -478,6 +479,8 @@ class BookApiTest extends TestCase
      */
     public function test_book_can_be_created(): void
     {
+        Sanctum::actingAs($this->user);
+
         $technicalGenre = Genre::factory()->create([
             'name' => '技術書',
         ]);
@@ -573,6 +576,8 @@ class BookApiTest extends TestCase
      */
     public function test_book_creation_returns_422_when_required_fields_are_missing(): void
     {
+        Sanctum::actingAs($this->user);
+
         $bookCountBeforeRequest = Book::count();
 
         $response = $this->postJson(
@@ -601,11 +606,11 @@ class BookApiTest extends TestCase
      */
     public function test_book_can_be_updated(): void
     {
-        $this->withoutExceptionHandling();
+        Sanctum::actingAs($this->user);
 
         $book = Book::factory()
-            ->for($this->user)
             ->create([
+                'user_id' => $this->user->id,
                 'title' => 'リーダブルコード',
                 'author' => 'Dustin Boswell',
                 'isbn' => '9784873115658',
@@ -705,17 +710,16 @@ class BookApiTest extends TestCase
      */
     public function test_book_update_returns_422_when_isbn_is_already_used(): void
     {
-        $book = Book::factory()
-            ->for($this->user)
-            ->create([
-                'isbn' => '9784873115658',
-            ]);
+        Sanctum::actingAs($this->user);
 
-        $otherBook = Book::factory()
-            ->for($this->user)
-            ->create([
-                'isbn' => '9780132350884',
-            ]);
+        $book = Book::factory()->create([
+            'user_id' => $this->user->id,
+            'isbn' => '9784873115658',
+        ]);
+
+        $otherBook = Book::factory()->create([
+            'isbn' => '9780132350884',
+        ]);
 
         $genre = Genre::factory()->create([
             'name' => '技術書',
@@ -760,6 +764,8 @@ class BookApiTest extends TestCase
      */
     public function test_book_update_returns_404_when_book_does_not_exist(): void
     {
+        Sanctum::actingAs($this->user);
+
         $genre = Genre::factory()->create([
             'name' => '技術書',
         ]);
@@ -789,29 +795,73 @@ class BookApiTest extends TestCase
     }
 
     /**
+     * 他人の書籍は更新できない場合は403が返る
+     */
+    public function test_user_cannot_update_another_users_book(): void
+    {
+        $owner = User::factory()->create();
+
+        $book = Book::factory()->create([
+            'user_id' => $owner->id,
+        ]);
+
+        $genre = Genre::factory()->create();
+
+        Sanctum::actingAs($this->user);
+
+        $requestData = [
+            'title' => '他人の書籍を更新',
+            'author' => 'テスト著者',
+            'isbn' => '9781234567897',
+            'published_date' => '2026-01-01',
+            'image_url' => null,
+            'description' => '更新できないはずです。',
+            'genre_ids' => [$genre->id],
+        ];
+
+        $response = $this->putJson(
+            "/api/v1/books/{$book->id}",
+            $requestData
+        );
+
+        $response
+            ->assertForbidden()
+            ->assertExactJson([
+                'message' => 'この操作を行う権限がありません。',
+            ]);
+
+        $this->assertDatabaseHas('books', [
+            'id' => $book->id,
+            'user_id' => $owner->id,
+        ]);
+    }
+
+    /**
      * 書籍を削除すると関連データも削除される
      */
     public function test_book_can_be_deleted_with_related_data(): void
     {
-        $user = User::factory()->create();
+        Sanctum::actingAs($this->user);
 
-        $book = Book::factory()->create();
+        $book = Book::factory()->create([
+            'user_id' => $this->user->id,
+        ]);
         $genre = Genre::factory()->create();
 
         $book->genres()->attach($genre->id);
 
         $review = Review::factory()->create([
-            'user_id' => $user->id,
+            'user_id' => $this->user->id,
             'book_id' => $book->id,
         ]);
 
         $reviewLike = ReviewLike::factory()->create([
-            'user_id' => $user->id,
+            'user_id' => $this->user->id,
             'review_id' => $review->id,
         ]);
 
         $favorite = Favorite::factory()->create([
-            'user_id' => $user->id,
+            'user_id' => $this->user->id,
             'book_id' => $book->id,
         ]);
 
@@ -846,6 +896,8 @@ class BookApiTest extends TestCase
      */
     public function test_book_delete_returns_404_when_book_does_not_exist(): void
     {
+        Sanctum::actingAs($this->user);
+
         $response = $this->deleteJson(
             '/api/v1/books/999999'
         );
@@ -855,5 +907,34 @@ class BookApiTest extends TestCase
             ->assertExactJson([
                 'message' => '指定された書籍は存在しません。',
             ]);
+    }
+
+    /**
+     * 他人の書籍は削除できない場合は403が返る
+     */
+    public function test_user_cannot_delete_another_users_book(): void
+    {
+        $owner = User::factory()->create();
+
+        $book = Book::factory()->create([
+            'user_id' => $owner->id,
+        ]);
+
+        Sanctum::actingAs($this->user);
+
+        $response = $this->deleteJson(
+            "/api/v1/books/{$book->id}"
+        );
+
+        $response
+            ->assertForbidden()
+            ->assertExactJson([
+                'message' => 'この操作を行う権限がありません。',
+            ]);
+
+        $this->assertDatabaseHas('books', [
+            'id' => $book->id,
+            'user_id' => $owner->id,
+        ]);
     }
 }
