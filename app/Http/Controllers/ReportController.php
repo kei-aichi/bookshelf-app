@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ReadingPlanStatus;
 use App\Models\ReadingPlan;
 use App\Models\Review;
 use Illuminate\Support\Facades\Auth;
@@ -28,7 +29,7 @@ class ReportController extends Controller
 
         $booksRead = ReadingPlan::query()
             ->where('user_id', $userId)
-            ->where('status', ReadingPlan::STATUS_COMPLETED)
+            ->where('status', ReadingPlanStatus::Completed->value)
             ->distinct()
             ->count('book_id');
 
