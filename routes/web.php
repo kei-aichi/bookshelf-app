@@ -83,10 +83,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/reading-plans/{readingPlan}/edit', [ReadingPlanController::class, 'edit'])
         ->name('reading-plans.edit');
 
+    // 読書計画作成
+    Route::post('/reading-plans', [ReadingPlanController::class, 'store'])
+        ->name('reading-plans.store');
+
+    // 読書計画更新
     Route::put(
         '/reading-plans/{readingPlan}',
         [ReadingPlanController::class, 'update']
     )->name('reading-plans.update');
+
     // 読書計画削除
     Route::delete(
         '/reading-plans/{readingPlan}',
