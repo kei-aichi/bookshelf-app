@@ -19,20 +19,24 @@ BookShelfは、書籍の登録・閲覧・レビュー投稿を行える書籍�
 
 ## 使用技術
 
-| 項目         | 使用技術        |
-| ------------ | --------------- |
-| PHP          | 8.2             |
-| Laravel      | 10.50.2         |
-| MySQL        | 8.0             |
-| Nginx        | latest          |
-| Laravel Sail | latest          |
-| Docker       | latest          |
-| Blade        | -               |
-| Tailwind CSS | 3.4             |
-| Alpine.js    | latest          |
-| Vite         | latest          |
-| Fortify      | Laravel Fortify |
-| phpMyAdmin   | latest          |
+| 項目                  | 使用技術                |
+| --------------------- | ----------------------- |
+| PHP                   | 8.2                     |
+| Laravel               | 10.50.2                 |
+| MySQL                 | 8.0                     |
+| Nginx                 | latest                  |
+| Laravel Sail          | latest                  |
+| Docker                | latest                  |
+| Blade                 | -                       |
+| Tailwind CSS          | 3.4                     |
+| Alpine.js             | latest                  |
+| Vite                  | latest                  |
+| Laravel Fortify       | Web認証                 |
+| Laravel Sanctum       | API認証（Bearer Token） |
+| Laravel Notifications | Database Channel        |
+| PHP Enum              | 読書状態管理            |
+| Google Books API      | ISBNによる書籍情報取得  |
+| phpMyAdmin            | latest                  |
 
 ---
 
@@ -294,18 +298,23 @@ sail artisan test
 
 ## APIエンドポイント
 
-###　公開API
+### 公開API
 
-| Method | URI                | 内容         |
-| ------ | ------------------ | ------------ |
-| GET    | /api/v1/books      | 書籍一覧取得 |
-| GET    | /api/v1/books/{id} | 書籍詳細取得 |
-| POST   | /api/v1/books      | 書籍登録     |
-| PUT    | /api/v1/books/{id} | 書籍更新     |
-| DELETE | /api/v1/books/{id} | 書籍削除     |
+| Method | URI                |  認証   | 内容         |
+| ------ | ------------------ | :-----: | ------------ |
+| GET    | /api/v1/books      |  不要   | 書籍一覧取得 |
+| GET    | /api/v1/books/{id} |  不要   | 書籍詳細取得 |
+| POST   | /api/v1/books      | Sanctum | 書籍登録     |
+| PUT    | /api/v1/books/{id} | Sanctum | 書籍更新     |
+| DELETE | /api/v1/books/{id} | Sanctum | 書籍削除     |
 
 ### 外部API連携
 
 | Method | URI                | 内容                                             |
 | ------ | ------------------ | ------------------------------------------------ |
 | GET    | /books/isbn/{isbn} | Google Books APIを利用してISBNから書籍情報を取得 |
+
+### 認証
+
+- Web認証：Laravel Fortify
+- API認証：Laravel Sanctum（Bearer Token）
