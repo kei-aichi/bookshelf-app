@@ -193,6 +193,7 @@ class BookController extends Controller
                 'https://www.googleapis.com/books/v1/volumes',
                 [
                     'q' => "isbn:{$isbn}",
+                    'key' => config('services.google_books.key'),
                 ]
             );
 
