@@ -105,7 +105,7 @@ erDiagram
     USERS ||--o{ FAVORITES : "お気に入り登録する"
     USERS ||--o{ REVIEW_LIKES : "いいねする"
     USERS ||--o{ READING_PLANS : "読書計画を作成する"
-    USERS ||--o{ NOTIFICATIONS : "通知を受け取る"
+    USERS ||--o{ NOTIFICATIONS : "通知対象（ポリモーフィック）"
 
     BOOKS ||--o{ REVIEWS : "レビューされる"
     BOOKS ||--o{ FAVORITES : "お気に入り登録される"
@@ -117,22 +117,19 @@ erDiagram
     REVIEWS ||--o{ REVIEW_LIKES : "いいねされる"
 
     USERS {
-        bigint id PK
+        bigint unsigned id PK
         varchar name
         varchar email UK
         timestamp email_verified_at "NULL可"
         varchar password
-        text two_factor_secret "NULL可"
-        text two_factor_recovery_codes "NULL可"
-        timestamp two_factor_confirmed_at "NULL可"
-        varchar remember_token "NULL可"
+        varchar(100) remember_token "NULL可"
         timestamp created_at
         timestamp updated_at
     }
 
     BOOKS {
-        bigint id PK
-        bigint user_id FK
+        bigint unsigned id PK
+        bigint unsigned user_id FK
         varchar title
         varchar author
         varchar isbn UK "NULL可"
@@ -144,51 +141,51 @@ erDiagram
     }
 
     GENRES {
-        bigint id PK
+        bigint unsigned id PK
         varchar name UK
         timestamp created_at
         timestamp updated_at
     }
 
     BOOK_GENRE {
-        bigint id PK
-        bigint book_id FK
-        bigint genre_id FK
+        bigint unsigned id PK
+        bigint unsigned book_id FK
+        bigint unsigned genre_id FK
         timestamp created_at
         timestamp updated_at
     }
 
     REVIEWS {
-        bigint id PK
-        bigint user_id FK
-        bigint book_id FK
-        tinyint rating
+        bigint unsigned id PK
+        bigint unsigned user_id FK
+        bigint unsigned book_id FK
+        tinyint unsigned rating
         text comment "NULL可"
         timestamp created_at
         timestamp updated_at
     }
 
     REVIEW_LIKES {
-        bigint id PK
-        bigint user_id FK
-        bigint review_id FK
+        bigint unsigned id PK
+        bigint unsigned user_id FK
+        bigint unsigned review_id FK
         timestamp created_at
         timestamp updated_at
     }
 
     FAVORITES {
-        bigint id PK
-        bigint user_id FK
-        bigint book_id FK
+        bigint unsigned id PK
+        bigint unsigned user_id FK
+        bigint unsigned book_id FK
         timestamp created_at
         timestamp updated_at
     }
 
     READING_PLANS {
-        bigint id PK
-        bigint user_id FK
-        bigint book_id FK
-        tinyint status
+        bigint unsigned id PK
+        bigint unsigned user_id FK
+        bigint unsigned book_id FK
+        tinyint unsigned status
         date target_date
         date completed_at "NULL可"
         timestamp created_at
@@ -199,8 +196,8 @@ erDiagram
         uuid id PK
         varchar type
         varchar notifiable_type
-        bigint notifiable_id
-        text data
+        bigint unsigned notifiable_id
+        json data
         timestamp read_at "NULL可"
         timestamp created_at
         timestamp updated_at
