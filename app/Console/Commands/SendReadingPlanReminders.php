@@ -28,7 +28,7 @@ class SendReadingPlanReminders extends Command
         $today = Carbon::today();
 
         $readingPlans = ReadingPlan::query()
-            ->where('status', '!=', ReadingPlanStatus::Completed)
+            ->where('status', ReadingPlanStatus::Reading)
             ->with(['user', 'book'])
             ->get();
 
