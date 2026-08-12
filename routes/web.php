@@ -64,7 +64,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/reading-plans', [ReadingPlanController::class, 'index'])
         ->name('reading-plans.index');
 
-    // 読書計画を読書中に更新
+    // 読書計画を進行中に更新
     Route::post(
         '/reading-plans/{readingPlan}/start',
         [ReadingPlanController::class, 'start']
