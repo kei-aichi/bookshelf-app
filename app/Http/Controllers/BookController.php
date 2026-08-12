@@ -213,7 +213,13 @@ class BookController extends Controller
                 ], 404);
             }
 
-            $volumeInfo = $items[0]['volumeInfo'] ?? [];
+            $volumeInfo = $items[0]['volumeInfo'] ?? null;
+
+            if (! is_array($volumeInfo) || empty($volumeInfo)) {
+                return response()->json([
+                    'error' => '書籍情報の形式が不正です。',
+                ], 502);
+            }
 
             return response()->json([
                 'title' => $volumeInfo['title'] ?? null,

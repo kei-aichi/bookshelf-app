@@ -188,4 +188,32 @@ class BookIsbnSearchTest extends TestCase
                 'error' => '通信エラーが発生しました。',
             ]);
     }
+
+    /**
+     * Google Books APIが不正なJSON構造を返した場合は502を返す
+     */
+    public function test_isbn_search_returns_502_when_google_books_api_returns_invalid_json_structure(): void
+    {
+        $user = User::factory()->create();
+
+        Http::fake([
+            'www.googleapis.com/books/v1/volumes*' => Http::response([
+                'items' => [
+                    [
+                        'unexpected' => 'invalid-data',
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->getJson(route('books.search-isbn', '9784167158057'));
+
+        $response
+            ->assertStatus(502)
+            ->assertJson([
+                'error' => '書籍情報の形式が不正です。',
+            ]);
+    }
 }
