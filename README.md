@@ -104,10 +104,13 @@ erDiagram
     USERS ||--o{ REVIEWS : "投稿する"
     USERS ||--o{ FAVORITES : "お気に入り登録する"
     USERS ||--o{ REVIEW_LIKES : "いいねする"
+    USERS ||--o{ READING_PLANS : "読書計画を作成する"
+    USERS ||--o{ NOTIFICATIONS : "通知を受け取る"
 
     BOOKS ||--o{ REVIEWS : "レビューされる"
     BOOKS ||--o{ FAVORITES : "お気に入り登録される"
     BOOKS ||--o{ BOOK_GENRE : "分類される"
+    BOOKS ||--o{ READING_PLANS : "読書計画に登録される"
 
     GENRES ||--o{ BOOK_GENRE : "書籍を分類する"
 
@@ -132,8 +135,8 @@ erDiagram
         bigint user_id FK
         varchar title
         varchar author
-        varchar isbn UK
-        date published_date
+        varchar isbn UK "NULL可"
+        date published_date "NULL可"
         text description "NULL可"
         varchar image_url "NULL可"
         timestamp created_at
@@ -177,6 +180,28 @@ erDiagram
         bigint id PK
         bigint user_id FK
         bigint book_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    READING_PLANS {
+        bigint id PK
+        bigint user_id FK
+        bigint book_id FK
+        tinyint status
+        date target_date
+        date completed_at "NULL可"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    NOTIFICATIONS {
+        uuid id PK
+        varchar type
+        varchar notifiable_type
+        bigint notifiable_id
+        text data
+        timestamp read_at "NULL可"
         timestamp created_at
         timestamp updated_at
     }
