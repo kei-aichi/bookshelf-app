@@ -87,22 +87,30 @@
                                                         読書開始
                                                     </button>
                                                 </form>
-                                            @endif
-
-                                            @if($plan->status !== \App\Enums\ReadingPlanStatus::Completed)
+                                            @elseif($plan->status === \App\Enums\ReadingPlanStatus::Reading)
                                                 <form action="{{ route('reading-plans.complete', $plan) }}" method="POST"
                                                     class="inline" novalidate>
                                                     @csrf
-                                                    <button type="submit" class="text-green-600 hover:text-green-900">読了する</button>
+                                                    <button type="submit" class="text-green-600 hover:text-green-900">
+                                                        読了する
+                                                    </button>
                                                 </form>
-                                                <a href="{{ route('reading-plans.edit', $plan) }}"
-                                                    class="text-indigo-600 hover:text-indigo-900">編集</a>
                                             @endif
+
+                                            @if($plan->status !== \App\Enums\ReadingPlanStatus::Completed)
+                                                <a href="{{ route('reading-plans.edit', $plan) }}"
+                                                    class="text-indigo-600 hover:text-indigo-900">
+                                                    編集
+                                                </a>
+                                            @endif
+
                                             <form action="{{ route('reading-plans.destroy', $plan) }}" method="POST"
                                                 class="inline" onsubmit="return confirm('本当に削除しますか？');" novalidate>
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-900">削除</button>
+                                                <button type="submit" class="text-red-600 hover:text-red-900">
+                                                    削除
+                                                </button>
                                             </form>
                                         </td>
                                     </tr>
