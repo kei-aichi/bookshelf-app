@@ -1008,4 +1008,58 @@ class BookApiTest extends TestCase
             'published_date' => null,
         ]);
     }
+
+    /**
+     * 未認証ユーザーは書籍を登録できない
+     */
+    public function test_unauthenticated_user_cannot_create_book(): void
+    {
+        $response = $this->postJson('/api/v1/books', [
+            'title' => '未認証テスト',
+            'author' => 'テスト著者',
+            'genre_ids' => [],
+        ]);
+
+        $response
+            ->assertUnauthorized()
+            ->assertJson([
+                'message' => '認証が必要です。',
+            ]);
+    }
+
+    /**
+     * 未認証ユーザーは書籍を更新できない
+     */
+    public function test_unauthenticated_user_cannot_update_book(): void
+    {
+        $book = Book::factory()->create();
+
+        $response = $this->putJson("/api/v1/books/{$book->id}", [
+            'title' => '更新テスト',
+            'author' => 'テスト著者',
+            'genre_ids' => [],
+        ]);
+
+        $response
+            ->assertUnauthorized()
+            ->assertJson([
+                'message' => '認証が必要です。',
+            ]);
+    }
+
+    /**
+     * 未認証ユーザーは書籍を削除できない
+     */
+    public function test_unauthenticated_user_cannot_delete_book(): void
+    {
+        $book = Book::factory()->create();
+
+        $response = $this->deleteJson("/api/v1/books/{$book->id}");
+
+        $response
+            ->assertUnauthorized()
+            ->assertJson([
+                'message' => '認証が必要です。',
+            ]);
+    }
 }
