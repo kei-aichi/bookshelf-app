@@ -999,8 +999,8 @@ class BookApiTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonPath('isbn', null)
-            ->assertJsonPath('published_date', null);
+            ->assertJsonPath('data.isbn', null)
+            ->assertJsonPath('data.published_date', null);
 
         $this->assertDatabaseHas('books', [
             'id' => $book->id,
