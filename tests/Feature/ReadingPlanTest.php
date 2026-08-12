@@ -593,4 +593,112 @@ class ReadingPlanTest extends TestCase
 
         $this->assertNull($readingPlan->completed_at);
     }
+
+    /**
+     * 進行中の読書計画を再度開始できない
+     */
+    public function test_reading_plan_cannot_be_started_when_already_reading(): void
+    {
+        $user = User::factory()->create();
+
+        $readingPlan = ReadingPlan::factory()->create([
+            'user_id' => $user->id,
+            'status' => ReadingPlanStatus::Reading,
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('reading-plans.start', $readingPlan))
+            ->assertForbidden();
+
+        $readingPlan->refresh();
+
+        $this->assertSame(
+            ReadingPlanStatus::Reading,
+            $readingPlan->status
+        );
+    }
+
+    /**
+     * 読了済みの読書計画を進行中へ戻せない
+     */
+    public function test_completed_reading_plan_cannot_be_started_again(): void
+    {
+        $user = User::factory()->create();
+
+        $readingPlan = ReadingPlan::factory()->create([
+            'user_id' => $user->id,
+            'status' => ReadingPlanStatus::Completed,
+            'completed_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('reading-plans.start', $readingPlan))
+            ->assertForbidden();
+
+        $readingPlan->refresh();
+
+        $this->assertSame(
+            ReadingPlanStatus::Completed,
+            $readingPlan->status
+        );
+    }
+
+    /**
+     * 開始前の読書計画を直接読了にできない
+     */
+    public function test_not_started_reading_plan_cannot_be_completed(): void
+    {
+        $user = User::factory()->create();
+
+        $readingPlan = ReadingPlan::factory()->create([
+            'user_id' => $user->id,
+            'status' => ReadingPlanStatus::NotStarted,
+            'completed_at' => null,
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('reading-plans.complete', $readingPlan))
+            ->assertForbidden();
+
+        $readingPlan->refresh();
+
+        $this->assertSame(
+            ReadingPlanStatus::NotStarted,
+            $readingPlan->status
+        );
+
+        $this->assertNull($readingPlan->completed_at);
+    }
+
+    /**
+     * 読了済みの読書計画を再度読了にできない
+     */
+    public function test_completed_reading_plan_cannot_be_completed_again(): void
+    {
+        $user = User::factory()->create();
+
+        $completedAt = now()->subDay();
+
+        $readingPlan = ReadingPlan::factory()->create([
+            'user_id' => $user->id,
+            'status' => ReadingPlanStatus::Completed,
+            'completed_at' => $completedAt,
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('reading-plans.complete', $readingPlan))
+            ->assertForbidden();
+
+        $readingPlan->refresh();
+
+        $this->assertSame(
+            ReadingPlanStatus::Completed,
+            $readingPlan->status
+        );
+
+        $this->assertSame(
+            $completedAt->toDateString(),
+            $readingPlan->completed_at->toDateString()
+        );
+    }
 }

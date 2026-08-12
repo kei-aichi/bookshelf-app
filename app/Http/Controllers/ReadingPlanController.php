@@ -46,6 +46,10 @@ class ReadingPlanController extends Controller
     {
         $this->authorize('update', $readingPlan);
 
+        if ($readingPlan->status !== ReadingPlanStatus::NotStarted) {
+            abort(403);
+        }
+
         $readingPlan->update([
             'status' => ReadingPlanStatus::Reading,
         ]);
@@ -61,6 +65,10 @@ class ReadingPlanController extends Controller
     public function complete(ReadingPlan $readingPlan): RedirectResponse
     {
         $this->authorize('update', $readingPlan);
+
+        if ($readingPlan->status !== ReadingPlanStatus::Reading) {
+            abort(403);
+        }
 
         $readingPlan->update([
             'status' => ReadingPlanStatus::Completed,
