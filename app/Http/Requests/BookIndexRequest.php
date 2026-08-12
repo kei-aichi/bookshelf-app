@@ -38,7 +38,7 @@ class BookIndexRequest extends FormRequest
                 'nullable',
                 'string',
                 Rule::in([
-                    'latest',
+                    'newest',
                     'oldest',
                     'title',
                     'rating',

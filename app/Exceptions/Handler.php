@@ -6,6 +6,7 @@ use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Throwable;
+use Illuminate\Auth\AuthenticationException;
 
 class Handler extends ExceptionHandler
 {
@@ -34,6 +35,14 @@ class Handler extends ExceptionHandler
                 return response()->json([
                     'message' => 'この操作を行う権限がありません。',
                 ], 403);
+            }
+        });
+
+        $this->renderable(function (AuthenticationException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'message' => '認証が必要です。',
+                ], 401);
             }
         });
     }

@@ -24,7 +24,7 @@ class BookController extends Controller
 
         $keyword = $validated['keyword'] ?? null;
         $genreId = $validated['genre'] ?? null;
-        $sort = $validated['sort'] ?? 'latest';
+        $sort = $validated['sort'] ?? 'newest';
 
         $books = Book::query()
             ->with('genres')
@@ -41,7 +41,7 @@ class BookController extends Controller
                     $query->where('genres.id', $genreId);
                 });
             })
-            ->when($sort === 'latest', function ($query) {
+            ->when($sort === 'newest', function ($query) {
                 $query->latest();
             })
             ->when($sort === 'oldest', function ($query) {
@@ -182,7 +182,7 @@ class BookController extends Controller
      */
     public function searchIsbn(string $isbn): JsonResponse
     {
-        if (! preg_match('/^\d{13}$/', $isbn)) {
+        if (!preg_match('/^\d{13}$/', $isbn)) {
             return response()->json([
                 'error' => 'ISBNは13桁の半角数字で入力してください。',
             ], 422);
