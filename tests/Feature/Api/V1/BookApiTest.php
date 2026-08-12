@@ -590,8 +590,6 @@ class BookApiTest extends TestCase
             ->assertJsonValidationErrors([
                 'title',
                 'author',
-                'isbn',
-                'published_date',
                 'genre_ids',
             ]);
 
@@ -935,6 +933,79 @@ class BookApiTest extends TestCase
         $this->assertDatabaseHas('books', [
             'id' => $book->id,
             'user_id' => $owner->id,
+        ]);
+    }
+
+    /**
+     * ISBNと出版日が未入力でも書籍を登録できる
+     */
+    public function test_book_can_be_created_without_isbn_and_published_date(): void
+    {
+        Sanctum::actingAs($this->user);
+
+        $genre = Genre::factory()->create();
+
+        $response = $this->postJson('/api/v1/books', [
+            'title' => 'nullableテスト書籍',
+            'author' => 'テスト著者',
+            'isbn' => null,
+            'published_date' => null,
+            'description' => null,
+            'image_url' => null,
+            'genre_ids' => [$genre->id],
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('data.title', 'nullableテスト書籍')
+            ->assertJsonPath('data.author', 'テスト著者')
+            ->assertJsonPath('data.isbn', null)
+            ->assertJsonPath('data.published_date', null);
+
+        $this->assertDatabaseHas('books', [
+            'title' => 'nullableテスト書籍',
+            'author' => 'テスト著者',
+            'isbn' => null,
+            'published_date' => null,
+        ]);
+    }
+
+    /**
+     * ISBNと出版日をNULLに更新できる
+     */
+    public function test_book_can_be_updated_with_null_isbn_and_published_date(): void
+    {
+        Sanctum::actingAs($this->user);
+
+        $genre = Genre::factory()->create();
+
+        $book = Book::factory()->create([
+            'user_id' => $this->user->id,
+            'isbn' => '9781234567890',
+            'published_date' => '2026-01-01',
+        ]);
+
+        $book->genres()->attach($genre->id);
+
+        $response = $this->putJson("/api/v1/books/{$book->id}", [
+            'title' => $book->title,
+            'author' => $book->author,
+            'isbn' => null,
+            'published_date' => null,
+            'description' => $book->description,
+            'image_url' => $book->image_url,
+            'genre_ids' => [$genre->id],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('isbn', null)
+            ->assertJsonPath('published_date', null);
+
+        $this->assertDatabaseHas('books', [
+            'id' => $book->id,
+            'isbn' => null,
+            'published_date' => null,
         ]);
     }
 }

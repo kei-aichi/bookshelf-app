@@ -71,7 +71,7 @@ class BookCrudTest extends TestCase
                 'title' => '',
                 'author' => '',
                 'isbn' => '123',
-                'published_at' => 'invalid-date',
+                'published_date' => 'invalid-date',
                 'image_url' => 'invalid-url',
                 'description' => null,
                 'genres' => [],
@@ -339,5 +339,72 @@ class BookCrudTest extends TestCase
         $this->actingAs($otherUser)
             ->get(route('books.edit', $book))
             ->assertForbidden();
+    }
+
+    /**
+     * ISBNと出版日が未入力でも書籍を登録できる
+     */
+    public function test_book_can_be_created_without_isbn_and_published_date(): void
+    {
+        $user = User::factory()->create();
+        $genre = Genre::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->post(route('books.store'), [
+                'title' => 'nullableテスト書籍',
+                'author' => 'テスト著者',
+                'isbn' => null,
+                'published_date' => null,
+                'image_url' => null,
+                'description' => null,
+                'genres' => [$genre->id],
+            ]);
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('books', [
+            'title' => 'nullableテスト書籍',
+            'author' => 'テスト著者',
+            'isbn' => null,
+            'published_date' => null,
+        ]);
+    }
+
+    /**
+     * ISBNと出版日をNULLに更新できる
+     */
+    public function test_book_can_be_updated_with_null_isbn_and_published_date(): void
+    {
+        $user = User::factory()->create();
+        $genre = Genre::factory()->create();
+
+        $book = Book::factory()->create([
+            'user_id' => $user->id,
+            'isbn' => '9781234567890',
+            'published_date' => '2026-01-01',
+        ]);
+
+        $book->genres()->attach($genre->id);
+
+        $response = $this
+            ->actingAs($user)
+            ->put(route('books.update', $book), [
+                'title' => $book->title,
+                'author' => $book->author,
+                'isbn' => null,
+                'published_date' => null,
+                'image_url' => $book->image_url,
+                'description' => $book->description,
+                'genres' => [$genre->id],
+            ]);
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('books', [
+            'id' => $book->id,
+            'isbn' => null,
+            'published_date' => null,
+        ]);
     }
 }

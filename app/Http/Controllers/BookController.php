@@ -182,7 +182,7 @@ class BookController extends Controller
      */
     public function searchIsbn(string $isbn): JsonResponse
     {
-        if (!preg_match('/^\d{13}$/', $isbn)) {
+        if (! preg_match('/^\d{13}$/', $isbn)) {
             return response()->json([
                 'error' => 'ISBNは13桁の半角数字で入力してください。',
             ], 422);
