@@ -12,6 +12,7 @@ use App\Http\Resources\BookResource;
 use App\Models\Book;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\DB;
 
 class BookController extends Controller
 {
@@ -71,16 +72,20 @@ class BookController extends Controller
 
         $user = $request->user();
 
-        $book = $user->books()->create([
-            'title' => $validated['title'],
-            'author' => $validated['author'],
-            'isbn' => $validated['isbn'],
-            'published_date' => $validated['published_date'],
-            'description' => $validated['description'] ?? null,
-            'image_url' => $validated['image_url'] ?? null,
-        ]);
+        $book = DB::transaction(function () use ($user, $validated): Book {
+            $book = $user->books()->create([
+                'title' => $validated['title'],
+                'author' => $validated['author'],
+                'isbn' => $validated['isbn'],
+                'published_date' => $validated['published_date'],
+                'description' => $validated['description'] ?? null,
+                'image_url' => $validated['image_url'] ?? null,
+            ]);
 
-        $book->genres()->sync($validated['genre_ids']);
+            $book->genres()->sync($validated['genre_ids']);
+
+            return $book;
+        });
 
         $book->load('genres');
 
@@ -107,16 +112,18 @@ class BookController extends Controller
 
         $validated = $request->validated();
 
-        $bookModel->update([
-            'title' => $validated['title'],
-            'author' => $validated['author'],
-            'isbn' => $validated['isbn'],
-            'published_date' => $validated['published_date'],
-            'description' => $validated['description'] ?? null,
-            'image_url' => $validated['image_url'] ?? null,
-        ]);
+        DB::transaction(function () use ($bookModel, $validated): void {
+            $bookModel->update([
+                'title' => $validated['title'],
+                'author' => $validated['author'],
+                'isbn' => $validated['isbn'],
+                'published_date' => $validated['published_date'],
+                'description' => $validated['description'] ?? null,
+                'image_url' => $validated['image_url'] ?? null,
+            ]);
 
-        $bookModel->genres()->sync($validated['genre_ids']);
+            $bookModel->genres()->sync($validated['genre_ids']);
+        });
 
         $bookModel->load('genres');
 

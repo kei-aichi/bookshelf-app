@@ -10,6 +10,7 @@ use App\Models\ReviewLike;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
+use RuntimeException;
 use Tests\TestCase;
 
 class BookApiTest extends TestCase
@@ -572,6 +573,46 @@ class BookApiTest extends TestCase
     }
 
     /**
+     * 書籍作成中に例外が発生した場合は保存内容をロールバックする
+     */
+    public function test_book_creation_is_rolled_back_when_an_exception_occurs(): void
+    {
+        Sanctum::actingAs($this->user);
+
+        Book::created(function (): void {
+            throw new RuntimeException('書籍作成後の処理に失敗');
+        });
+
+        $this->withoutExceptionHandling();
+
+        $caughtException = null;
+
+        try {
+            $this->postJson('/api/v1/books', [
+                'title' => 'ロールバック対象書籍',
+                'author' => 'テスト著者',
+                'isbn' => '9781234567890',
+                'published_date' => '2026-08-13',
+                'description' => null,
+                'image_url' => null,
+                'genre_ids' => [$this->genre->id],
+            ]);
+        } catch (RuntimeException $exception) {
+            $caughtException = $exception;
+        }
+
+        $this->assertNotNull($caughtException, '例外が発生しませんでした。');
+        $this->assertSame(
+            '書籍作成後の処理に失敗',
+            $caughtException->getMessage()
+        );
+
+        $this->assertDatabaseMissing('books', [
+            'title' => 'ロールバック対象書籍',
+        ]);
+    }
+
+    /**
      * 必須項目が未入力の場合は422が返る
      */
     public function test_book_creation_returns_422_when_required_fields_are_missing(): void
@@ -700,6 +741,60 @@ class BookApiTest extends TestCase
         $this->assertDatabaseMissing('book_genre', [
             'book_id' => $book->id,
             'genre_id' => $oldGenre->id,
+        ]);
+    }
+
+    /**
+     * 書籍更新中に例外が発生した場合は更新内容をロールバックする
+     */
+    public function test_book_update_is_rolled_back_when_an_exception_occurs(): void
+    {
+        Sanctum::actingAs($this->user);
+
+        $book = Book::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => '更新前タイトル',
+            'isbn' => '9781234567890',
+        ]);
+
+        $book->genres()->attach($this->genre->id);
+
+        Book::updated(function (): void {
+            throw new RuntimeException('書籍更新後の処理に失敗');
+        });
+
+        $this->withoutExceptionHandling();
+
+        $caughtException = null;
+
+        try {
+            $this->putJson("/api/v1/books/{$book->id}", [
+                'title' => '更新後タイトル',
+                'author' => $book->author,
+                'isbn' => $book->isbn,
+                'published_date' => $book->published_date->toDateString(),
+                'description' => $book->description,
+                'image_url' => $book->image_url,
+                'genre_ids' => [$this->genre->id],
+            ]);
+        } catch (RuntimeException $exception) {
+            $caughtException = $exception;
+        }
+
+        $this->assertNotNull($caughtException, '例外が発生しませんでした。');
+        $this->assertSame(
+            '書籍更新後の処理に失敗',
+            $caughtException->getMessage()
+        );
+
+        $this->assertDatabaseHas('books', [
+            'id' => $book->id,
+            'title' => '更新前タイトル',
+        ]);
+
+        $this->assertDatabaseMissing('books', [
+            'id' => $book->id,
+            'title' => '更新後タイトル',
         ]);
     }
 

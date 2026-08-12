@@ -13,7 +13,7 @@ class GenreController extends Controller
     /**
      * ジャンル一覧を表示する
      */
-    public function index()
+    public function index(): View
     {
         $genres = Genre::withCount('books')
             ->orderBy('name')
