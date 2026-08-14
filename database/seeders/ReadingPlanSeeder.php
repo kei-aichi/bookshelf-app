@@ -14,15 +14,15 @@ class ReadingPlanSeeder extends Seeder
      */
     public function run(): void
     {
-        $mainUser = User::first();
+        $mainUser = User::where('email', 'yamada@example.com')->first();
 
-        $otherUsers = User::whereKeyNot($mainUser->id)->get();
-
-        $books = Book::all();
+        $books = Book::orderBy('id')->get();
 
         if (! $mainUser || $books->count() < 10) {
             return;
         }
+
+        $otherUsers = User::whereKeyNot($mainUser->id)->get();
 
         // 主要ユーザー：未着手
         ReadingPlan::factory()->create([
