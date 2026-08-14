@@ -487,12 +487,10 @@ sail artisan tinker
 Tinker内で以下を実行します。
 
 ```php
-$user = App\Models\User::where('email', 'yamada@example.com')->firstOrFail();
-$token = $user->createToken('api-test')->plainTextToken;
-$token;
+App\Models\User::where('email', 'yamada@example.com')->firstOrFail()->createToken('api-test')->plainTextToken;
 ```
 
-表示されたトークンをリクエストの`Authorization`ヘッダーへ指定します。
+`1|...` のような形式で表示された文字列がAPIトークンです。このトークンをリクエストの`Authorization`ヘッダーへ指定します。
 
 Tinkerを終了した後、発行されたトークンをシェル変数へ設定します。
 
@@ -553,6 +551,7 @@ sail artisan tinker
 ```
 
 ```php
-$user = App\Models\User::where('email', 'yamada@example.com')->firstOrFail();
-$user->tokens()->where('name', 'api-test')->delete();
+App\Models\User::where('email', 'yamada@example.com')->firstOrFail()->tokens()->where('name', 'api-test')->delete();
 ```
+
+削除したトークン数が表示されます。`1`以上なら削除成功、`0`なら対象の`api-test`トークンは存在しません。
