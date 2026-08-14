@@ -164,6 +164,25 @@ class ReadingPlanTest extends TestCase
     }
 
     /**
+     * 存在しない状態では読書計画を絞り込めない
+     */
+    public function test_reading_plans_cannot_be_filtered_by_invalid_status(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->from(route('reading-plans.index'))
+            ->get(route('reading-plans.index', [
+                'status' => 999,
+            ]));
+
+        $response
+            ->assertRedirect(route('reading-plans.index'))
+            ->assertSessionHasErrors('status');
+    }
+
+    /**
      * 読書計画作成画面に書籍プルダウンと期日入力欄が表示される
      */
     public function test_reading_plan_create_page_is_displayed(): void

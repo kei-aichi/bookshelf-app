@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ReadingPlanStatus;
+use App\Http\Requests\ReadingPlanIndexRequest;
 use App\Http\Requests\StoreReadingPlanRequest;
 use App\Http\Requests\UpdateReadingPlanRequest;
 use App\Models\Book;
 use App\Models\ReadingPlan;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -17,18 +17,20 @@ class ReadingPlanController extends Controller
     /**
      * 読書計画一覧画面を表示する。
      */
-    public function index(Request $request): View
+    public function index(ReadingPlanIndexRequest $request): View
     {
-        $currentStatus = $request->filled('status')
-            ? $request->integer('status')
+        $validated = $request->validated();
+
+        $currentStatus = isset($validated['status'])
+            ? (int) $validated['status']
             : null;
 
         $readingPlans = ReadingPlan::query()
             ->where('user_id', Auth::id())
             ->with('book')
             ->when(
-                $currentStatus !== null && $currentStatus !== '',
-                fn ($query) => $query->where('status', (int) $currentStatus)
+                $currentStatus !== null,
+                fn ($query) => $query->where('status', $currentStatus)
             )
             ->latest()
             ->get();
