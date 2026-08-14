@@ -26,9 +26,7 @@ class NotificationController extends Controller
      */
     public function read(DatabaseNotification $notification): RedirectResponse
     {
-        if ($notification->notifiable_id !== auth()->id()) {
-            abort(403);
-        }
+        $this->authorize('read', $notification);
 
         $notification->markAsRead();
 
