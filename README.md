@@ -269,6 +269,8 @@ composer install
 
 ### 4. Sail起動
 
+事前にDocker Desktopを起動し、Dockerが実行可能な状態になっていることを確認してください。
+
 以降のコマンドを短い`sail`形式で実行できるよう、現在のターミナルでエイリアスを設定します。
 
 ```bash
