@@ -21,9 +21,9 @@ BookShelfは、書籍の登録・閲覧・レビュー投稿を行える書籍�
 
 | 項目                  | 使用技術                |
 | --------------------- | ----------------------- |
-| PHP                   | 8.2                     |
+| PHP                   | 8.5                     |
 | Laravel               | 10.50.2                 |
-| MySQL                 | 8.0                     |
+| MySQL                 | 8.4                     |
 | Nginx                 | latest                  |
 | Laravel Sail          | latest                  |
 | Docker                | latest                  |
@@ -230,6 +230,8 @@ erDiagram
 - Git
 - Docker Compose
 - Laravel Sail
+- PHP 8.1以上
+- Composer
 
 ---
 
@@ -238,7 +240,7 @@ erDiagram
 ### 1. リポジトリをクローン
 
 ```bash
-git clone　https://github.com/kei-aichi/bookshelf-app.git
+git clone https://github.com/kei-aichi/bookshelf-app.git
 ```
 
 ```bash
@@ -259,6 +261,16 @@ composer install
 
 ### 4. アプリケーションキー生成
 
+以降のコマンドを短い`sail`形式で実行できるよう、現在のターミナルでエイリアスを設定します。
+
+```bash
+alias sail='./vendor/bin/sail'
+```
+
+このエイリアスは、設定したターミナルを閉じると解除されます。新しいターミナルを開いた場合は、プロジェクトディレクトリへ移動して同じコマンドを再度実行してください。
+
+アプリケーションキーを生成します。
+
 ```bash
 sail artisan key:generate
 ```
@@ -276,6 +288,17 @@ sail npm install
 ```
 
 ### 7. Vite起動
+
+Viteは起動中のままになるため、ここからは別のターミナルを開いて実行します。
+
+新しいターミナルでプロジェクトディレクトリへ移動し、Sailのエイリアスを設定します。
+
+```bash
+cd bookshelf-app
+alias sail='./vendor/bin/sail'
+```
+
+続けてViteを起動し、このターミナルは開いたままにします。
 
 ```bash
 sail npm run dev
@@ -348,20 +371,22 @@ sail artisan test
 
 1. 読書計画を作成します。
 
-2. `reading_plans` テーブルの対象レコードの `target_date` を、確認したい通知タイミングに合わせて変更します。
+2. 作成した読書計画の「読書開始」を押し、状態を「進行中」にします。
+
+3. `reading_plans` テーブルの対象レコードの `target_date` を、確認したい通知タイミングに合わせて変更します。
     - 3日前通知を確認する場合：現在日から3日後の日付
     - 当日通知を確認する場合：現在日
     - 3日後通知を確認する場合：現在日から3日前の日付
 
-3. ターミナルで以下のコマンドを実行します。
+4. ターミナルで以下のコマンドを実行します。
 
 ```bash
 sail artisan reading-plans:send-reminders
 ```
 
-4. アプリケーションの通知一覧画面を開き、対象のリマインダー通知が表示されることを確認します。
+5. アプリケーションの通知一覧画面を開き、対象のリマインダー通知が表示されることを確認します。
 
-5. 同じ条件のまま再度コマンドを実行し、同一の読書計画・同一タイミングの通知が重複して作成されないことを確認します。
+6. 同じ条件のまま再度コマンドを実行し、同一の読書計画・同一タイミングの通知が重複して作成されないことを確認します。
 
 ### Schedulerの確認
 
@@ -385,8 +410,6 @@ sail artisan schedule:list
 - ジャンル管理
 - お気に入り機能
 - ランキング機能
-- 読書計画管理
-- 通知機能
 
 ### 応用機能
 
@@ -394,6 +417,8 @@ sail artisan schedule:list
 - 高度な検索
 - Laravel SanctumによるAPI認証
 - 読書レポート
+- 読書計画管理
+- 通知機能
 - リマインダー通知
 
 ---
@@ -412,9 +437,9 @@ sail artisan schedule:list
 
 ### 外部API連携
 
-| Method | URI                | 内容                                             |
-| ------ | ------------------ | ------------------------------------------------ |
-| GET    | /books/isbn/{isbn} | Google Books APIを利用してISBNから書籍情報を取得 |
+| Method | URI                | 認証            | 内容                                             |
+| ------ | ------------------ | --------------- | ------------------------------------------------ |
+| GET    | /books/isbn/{isbn} | Webログイン必須 | Google Books APIを利用してISBNから書籍情報を取得 |
 
 ### 認証
 
@@ -425,4 +450,85 @@ sail artisan schedule:list
 
 ```bash
 sail artisan test tests/Feature/Api/V1/BookApiTest.php
+```
+
+### API認証用トークンの発行
+
+認証が必要なAPIを手動で確認する場合は、Laravel TinkerでサンプルユーザーのSanctumトークンを発行します。
+
+```bash
+sail artisan tinker
+```
+
+Tinker内で以下を実行します。
+
+```php
+$user = App\Models\User::where('email', 'yamada@example.com')->firstOrFail();
+$token = $user->createToken('api-test')->plainTextToken;
+$token;
+```
+
+表示されたトークンをリクエストの`Authorization`ヘッダーへ指定します。
+
+Tinkerを終了した後、発行されたトークンをシェル変数へ設定します。
+
+```bash
+API_TOKEN='Tinkerで発行されたトークン'
+```
+
+```text
+Authorization: Bearer 発行されたトークン
+Accept: application/json
+```
+
+実際に発行したトークンは、READMEやGitへ記載しないでください。
+
+### 認証付き書籍登録APIの確認
+
+`genre_ids`には、データベースに存在するジャンルIDを指定してください。
+
+```bash
+curl -X POST http://localhost/api/v1/books \
+  -H "Authorization: Bearer ${API_TOKEN}" \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "API動作確認用書籍",
+    "author": "テスト著者",
+    "isbn": null,
+    "published_date": null,
+    "description": "Sanctum認証APIの動作確認用です。",
+    "image_url": null,
+    "genre_ids": [1]
+  }'
+```
+
+正常に登録されると、`201 Created`が返ります。更新・削除の認可を確認するときは、この操作で登録した山田太郎所有の書籍を使用してください。
+
+### 未認証時の確認
+
+トークンを指定せずに登録APIを呼び出すと、`401 Unauthorized`が返ります。
+
+```bash
+curl -X POST http://localhost/api/v1/books \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "未認証テスト",
+    "author": "テスト著者",
+    "genre_ids": [1]
+  }'
+```
+
+### 発行したトークンの削除
+
+動作確認後は、Tinkerで確認用トークンを削除できます。
+
+```bash
+sail artisan tinker
+```
+
+```php
+$user = App\Models\User::where('email', 'yamada@example.com')->firstOrFail();
+$user->tokens()->where('name', 'api-test')->delete();
 ```
